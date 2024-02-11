@@ -1,114 +1,79 @@
 <?php
-include_once"ui/connectdb.php";
+include_once "ui/connectdb.php";
 session_start();
 
-if(isset($_POST['btn_login'])){
+if (isset($_POST['btn_login'])) {
+    $userInput = $_POST['txt_email'];
+    $password = $_POST['txt_password'];
 
+    
+    if (strpos($userInput, '@') !== false) {
+     
+        $select = $pdo->prepare("SELECT * FROM tbl_user WHERE useremail=:user AND userpassword=:password");
+    } else {
+      
+        $select = $pdo->prepare("SELECT * FROM tbl_user WHERE username=:user AND userpassword=:password");
+    }
 
-$useremail = $_POST['txt_email'];
-$password = $_POST['txt_password'];
+    $select->bindParam(':user', $userInput);
+    $select->bindParam(':password', $password);
+    $select->execute();
 
-$select = $pdo->prepare("select * from tbl_user where useremail='$useremail' AND userpassword='$password'");
-$select->execute();
+    $row = $select->fetch(PDO::FETCH_ASSOC);
 
+    if ($row) {
+       
+        $_SESSION['status'] = "Login successful by " . ucfirst($row['role']); // Set the status message based on the user's role
+        $_SESSION['status_code'] = "success";
+        $_SESSION['userid'] = $row['userid'];
+        $_SESSION['username'] = $row['username'];
+        $_SESSION['useremail'] = $row['useremail'];
+        $_SESSION['role'] = $row['role'];
 
-$row = $select->fetch(PDO::FETCH_ASSOC);
-
-
-  if(is_array($row)){
-
-
-
-
-    if($row['useremail'] == $useremail AND $row['userpassword'] == $password and $row['role'] == "Admin"){
-
-
-
-    $_SESSION['status']="Login Success By Admin";
-    $_SESSION['status_code']="success";
-
-    header('refresh: 1;ui/dashboard.php');
-
-$_SESSION['userid'] = $row['userid'];
-$_SESSION['username'] = $row['username'];
-$_SESSION['useremail'] = $row['useremail'];
-$_SESSION['role'] = $row['role'];
-
-
-
-
-
-
-  } else if($row['useremail'] == $useremail AND $row['userpassword'] == $password and $row['role'] == "User"){
-
-
-    $_SESSION['status']="Login Success By User";
-    $_SESSION['status_code']="success";
-
-    header('refresh: 3;ui/user.php');
-
-  $_SESSION['userid'] = $row['userid'];
-  $_SESSION['username'] = $row['username'];
-  $_SESSION['useremail'] = $row['useremail'];
-  $_SESSION['role'] = $row['role'];
-
-
+        if ($row['role'] == "Admin") {
+          header('refresh:1; ui/dashboard.php');
+        } else if ($row['role'] == "User") {
+          header('refresh:3; ui/user.php');
+        }
+    } else {
+        $_SESSION['status'] = "Invalid email/username or password";
+        $_SESSION['status_code'] = "error";
+    }
 }
-
-
-
-
-
-
-  } else {
-
-
-
-  //echo $success="Wrong Email or Password";
-
-  $_SESSION['status']="Wrong Email or Password";
-  $_SESSION['status_code']="error";
-
-
-
-
-
-   }
-}
-
-
 ?>
+
+
+
+
+
+
+
 
 
 
 
 <!DOCTYPE html>
 <html lang="en">
-
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>POS BARCODE | Log in </title>
+  <title>POS BARCODE| Log in </title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- icheck bootstrap -->
 
-  <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+   <!-- SweetAlert2 -->
+   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   <!-- Toastr -->
   <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
 
-  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
 
+  <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
-
-
 </head>
-
 <body class="hold-transition login-page">
 <div class="login-box">
   <!-- /.login-logo -->
@@ -122,7 +87,7 @@ $_SESSION['role'] = $row['role'];
       <form action="" method="post">
         <div class="input-group mb-3">
 
-          <input type="email" class="form-control" placeholder="Email" name="txt_email" required>
+        <input type="text" class="form-control" placeholder="Email or Username" name="txt_email" required>
 
 
           <div class="input-group-append">
@@ -133,7 +98,7 @@ $_SESSION['role'] = $row['role'];
         </div>
         <div class="input-group mb-3">
 
-        <input type="password" class="form-control" placeholder="Password" name="txt_password" required>
+          <input type="password" class="form-control" placeholder="Password" name="txt_password"required>
 
 
           <div class="input-group-append">
@@ -146,6 +111,7 @@ $_SESSION['role'] = $row['role'];
           <div class="col-8">
             <div class="icheck-primary">
             <a href="forgot-password.html">I forgot my password</a>
+              </label>
             </div>
           </div>
           <!-- /.col -->
@@ -156,14 +122,14 @@ $_SESSION['role'] = $row['role'];
         </div>
       </form>
 
-
+    
       <!-- /.social-auth-links -->
 
       <p class="mb-1">
-
+      
       </p>
       <p class="mb-0">
-
+       
       </p>
     </div>
     <!-- /.card-body -->
@@ -172,37 +138,30 @@ $_SESSION['role'] = $row['role'];
 </div>
 <!-- /.login-box -->
 
-
-
-</body>
-
-
-</html>
 <!-- jQuery -->
 <script src="plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-
 <!-- SweetAlert2 -->
 <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
+<!-- sweetalert for confirmation deletion -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Toastr -->
 <script src="plugins/toastr/toastr.min.js"></script>
-
 <!-- AdminLTE App -->
 <script src="dist/js/adminlte.min.js"></script>
-
-
-
+</body>
+</html>
 
 
 <?php
-if(isset($_SESSION['status']) && $_SESSION['status']!='')
 
+if(isset($_SESSION['status']) &&  $_SESSION['status']!='')
+ 
 {
 
 ?>
 <script>
-
 $(function() {
     var Toast = Swal.mixin({
       toast: true,
@@ -211,19 +170,19 @@ $(function() {
       timer: 5000
     });
 
-
-      swal.fire({
+    
+      Toast.fire({
         icon: '<?php echo $_SESSION['status_code'];?>',
         title: '<?php echo $_SESSION['status'];?>'
       })
-});
-
+    });
 
 </script>
-
 
 
 <?php
 unset($_SESSION['status']);
 }
+
+
 ?>
