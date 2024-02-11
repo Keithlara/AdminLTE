@@ -1,10 +1,10 @@
 <?php
-
+  
   include_once 'connectdb.php';
   session_start();
 
 
-
+ 
   if($_SESSION['useremail']=="" OR $_SESSION['role']=="User"){
 
     header('location:../index.php');
@@ -21,11 +21,11 @@
 
     }else{
 
-
+      
     include_once"headeruser.php";
-
-
-
+    
+  
+  
   }
 
 error_reporting(0);
@@ -83,7 +83,7 @@ $select->execute();
 
 if($select->rowCount()>0){
 
-
+  
 
   $_SESSION['status']="Email already exists!.";
   $_SESSION['status_code']="warning";
@@ -100,15 +100,15 @@ $select->execute();
 
 if($select->rowCount()>0){
 
-
+  
 
   $_SESSION['status']="Password already exists.";
   $_SESSION['status_code']="warning";
 
+ 
 
 
-
-
+  
 
 }else{
 
@@ -121,17 +121,17 @@ if($select->rowCount()>0){
   $insert->bindParam(':contact',$usercontact);
   $insert->bindParam(':address',$useraddress);
   $insert->bindParam(':role',$userrole);
-
+  
   if($insert->execute()){
-
-
-
+  
+  
+  
   $_SESSION['status']="Inserted Successfully! ";
   $_SESSION['status_code']="success";
-
+  
   }else{
-
-
+  
+  
   $_SESSION['status']="Error inserting the user into the database";
   $_SESSION['status_code']="error";
   }
@@ -145,8 +145,8 @@ if($select->rowCount()>0){
 
   ?>
 
-
-
+ 
+  
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -158,7 +158,7 @@ if($select->rowCount()>0){
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-
+             
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -169,7 +169,7 @@ if($select->rowCount()>0){
     <!-- Main content -->
     <div class="content">
       <div class="container-fluid">
-
+       
            <div class="col-lg-12">
           <div class="card card-primary card-outline">
               <div class="card-header">
@@ -185,7 +185,7 @@ if($select->rowCount()>0){
 <div class="col-lg-4">
 
 <form action="" method="post">
-
+               
                   <div class="form-group">
                     <label for="exampleInputEmail1">Name</label>
                     <input type="text" class="form-control" placeholder="Enter Name" name="txtname" required>
@@ -215,15 +215,15 @@ if($select->rowCount()>0){
                     <label for="exampleInputPassword1">Address</label>
                     <input type="text" class="form-control"  placeholder="Address" name="txtaddress" required>
                   </div>
-
-
+                  
+                  
                       <div class="form-group">
                         <label>Role</label>
                         <select class="form-control" name="txtselect_option" required>
                           <option value="" disabled selected>Select Role</option>
                           <option>Admin</option>
                           <option>User</option>
-
+                       
                         </select>
                       </div>
 
@@ -262,6 +262,7 @@ if($select->rowCount()>0){
 
 
 
+<tbody>
 <?php 
 
 $select = $pdo->prepare("select * from tbl_user order by userid ASC");
@@ -272,7 +273,7 @@ while($row=$select->fetch(PDO::FETCH_OBJ))
 {
 
   echo'
-  <tr>
+  <tr id="item_' .$row->userid.'">
   <td>'.$row->userid.'</td>
   <td>'.$row->username.'</td>
   <td>'.$row->userage.'</td>
@@ -282,31 +283,58 @@ while($row=$select->fetch(PDO::FETCH_OBJ))
   <td>'.$row->useraddress.'</td>
   <td>'.$row->role.'</td>
 <td>
+<button onclick="Delete('.$row->userid.')"
+ type="button" class="btn btn-danger"> <i class="fa fa-trash-alt"></i></button>
 
-<a href="registration.php?id='.$row->userid,'"class="btn btn-danger")"><i class="fa fa-trash-alt"></i></a>
+
+
 
 </td>
-  
-  </tr>
-
-
-';
-
+</tr>';
 
 }
 
-
-
-
 ?>
 
-<tbody>
+<script>
 
-<script src="https:code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https:cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  
+function Delete(id){
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "Are you sure you want to proceed?",
+    type: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: "#d33",
+    confirmButtonText:"Yes, Delete It!",
+  }).then(function(result){
+    if(result.value){
+      $.ajax({
+        url: ` delete.php?id=${id}`,
+        type : 'GET',
+        success : function(data) {
+          Swal.fire({
+            title: 'Deleted!',
+            showConfirmButton: true,
+            timer: 1000,
+          });
+          $("#item_" + id).remove();
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+          Swal.hideloading();
+          Swal.fire("!Oops", "Something went wrong, try again later", "error");
+        }
 
 
-  </tbody>
+      });
+    }
+  });
+}
+
+
+  </script>
+
 
 
 </table>
@@ -315,20 +343,20 @@ while($row=$select->fetch(PDO::FETCH_OBJ))
 </div>
 
 
+                
 
-
-
+                
               </div>
 
 
               </div>
             </div>
+           
+         
+            
 
-
-
-
-
-
+            
+         
       </div><!-- /.container-fluid -->
     </div>
     <!-- /.content -->
@@ -338,13 +366,13 @@ while($row=$select->fetch(PDO::FETCH_OBJ))
 
 
   <?php
-
+  
   include_once "footer.php";
-
-
+  
+  
   ?>
 
-
+  
 <?php
 if(isset($_SESSION['status']) && $_SESSION['status']!='')
 
@@ -356,13 +384,13 @@ if(isset($_SESSION['status']) && $_SESSION['status']!='')
 
 
 
-
+  
       Swal.fire({
         icon: '<?php echo $_SESSION['status_code'];?>',
         title: '<?php echo $_SESSION['status'];?>'
       });
 
-
+     
 
 
 
